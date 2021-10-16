@@ -1,0 +1,16 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
+      - org.springframework.boot.autoconfigure.mongo.MongoReactiveAutoConfiguration
+
+udemy:
+  mongodb:
+    replicaset:
+      name: docker-rs
+      username: admin
+      password: admin
+      primary: mongo1
+      port: 9042
+      database: udemy
+      authentication-database: admin
