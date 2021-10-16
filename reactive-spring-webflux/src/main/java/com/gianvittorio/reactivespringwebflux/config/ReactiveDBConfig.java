@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.config.AbstractReactiveMongoConfiguratio
 import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRepositories;
 
 @Configuration
-@EnableReactiveMongoRepositories
+@EnableReactiveMongoRepositories(basePackages = {"com/gianvittorio/reactivespringwebflux/domain/repository"})
 public class ReactiveDBConfig extends AbstractReactiveMongoConfiguration {
 
     @Value("${udemy.mongodb.replicaset.name}")
