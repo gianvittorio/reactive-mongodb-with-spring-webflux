@@ -22,6 +22,14 @@ public class ProjectHandler {
                 .flatMap(request -> request.bodyToMono(Project.class))
                 .flatMap(projectService::createProject)
                 .flatMap(data -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(data));
+//                .onErrorResume(error -> {
+//                    if (error instanceof OptimisticLockingFailureException) {
+//                        return ServerResponse.badRequest().build();
+//                    }
+//
+//                    return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                            .build();
+//                });
     }
 
     public Mono<ServerResponse> createTask(final ServerRequest serverRequest) {
