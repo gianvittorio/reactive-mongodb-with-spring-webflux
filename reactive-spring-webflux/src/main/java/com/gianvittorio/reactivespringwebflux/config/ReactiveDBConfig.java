@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.AbstractReactiveMongoConfiguration;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRepositories;
 
 @Configuration
@@ -54,5 +55,10 @@ public class ReactiveDBConfig extends AbstractReactiveMongoConfiguration {
     @Override
     protected String getDatabaseName() {
         return database;
+    }
+
+    @Bean
+    public ReactiveMongoTemplate reactiveMongoTemplate(final MongoClient mongoClient) {
+        return new ReactiveMongoTemplate(mongoClient, this.getDatabaseName());
     }
 }

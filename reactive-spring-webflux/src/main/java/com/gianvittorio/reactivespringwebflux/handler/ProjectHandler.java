@@ -10,6 +10,8 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
+import java.util.function.Function;
+
 @Component
 @RequiredArgsConstructor
 public class ProjectHandler {
@@ -58,5 +60,132 @@ public class ProjectHandler {
         return projectService.deleteById(id)
                 .then(ServerResponse.noContent().build())
                 .log();
+    }
+
+    public Mono<ServerResponse> findByName(final ServerRequest serverRequest) {
+        return Mono.just(serverRequest)
+                .map(request -> request.queryParam("name"))
+                .flatMap(nameOptional -> nameOptional.map(Mono::just).orElse(Mono.empty()))
+                .flatMapMany(projectService::findByName)
+                .collectList()
+                .flatMap(data -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(data))
+                .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    public Mono<ServerResponse> findByNameNot(final ServerRequest serverRequest) {
+        return Mono.just(serverRequest)
+                .map(request -> request.queryParam("name"))
+                .flatMap(nameOptional -> nameOptional.map(Mono::just).orElse(Mono.empty()))
+                .flatMapMany(projectService::findByNameNot)
+                .collectList()
+                .flatMap(data -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(data))
+                .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    public Mono<ServerResponse> findByEstimatedCostGreaterThan(final ServerRequest serverRequest) {
+        return Mono.just(serverRequest)
+                .map(request -> request.queryParam("cost"))
+                .flatMap(nameOptional -> nameOptional.map(Mono::just).orElse(Mono.empty()))
+                .map(Long::parseLong)
+                .flatMapMany(projectService::findByEstimatedCostGreaterThan)
+                .collectList()
+                .flatMap(data -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(data))
+                .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    public Mono<ServerResponse> findByEstimatedCostBetween(final ServerRequest serverRequest) {
+        final Mono<Long> fromMono = Mono.just(serverRequest)
+                .map(request -> request.queryParam("from"))
+                .flatMap(fromOptional -> fromOptional.map(Mono::just).orElse(Mono.empty()))
+                .map(Long::parseLong);
+
+        final Mono<Long> toMono = Mono.just(serverRequest)
+                .map(request -> request.queryParam("to"))
+                .flatMap(fromOptional -> fromOptional.map(Mono::just).orElse(Mono.empty()))
+                .map(Long::parseLong);
+
+        return fromMono.zipWith(toMono, projectService::findByEstimatedCostBetween)
+                .flatMapMany(Function.identity())
+                .collectList()
+                .flatMap(data -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(data))
+                .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    public Mono<ServerResponse> findByNameLike(final ServerRequest serverRequest) {
+        return Mono.just(serverRequest)
+                .map(request -> request.queryParam("name"))
+                .flatMap(nameOptional -> nameOptional.map(Mono::just).orElse(Mono.empty()))
+                .flatMapMany(projectService::findByNameLike)
+                .collectList()
+                .flatMap(data -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(data))
+                .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    public Mono<ServerResponse> findByNameRegex(final ServerRequest serverRequest) {
+        return Mono.just(serverRequest)
+                .map(request -> request.queryParam("name"))
+                .flatMap(nameOptional -> nameOptional.map(Mono::just).orElse(Mono.empty()))
+                .flatMapMany(projectService::findByNameRegex)
+                .collectList()
+                .flatMap(data -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(data))
+                .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    public Mono<ServerResponse> findByNameQuery(final ServerRequest serverRequest) {
+        return Mono.just(serverRequest)
+                .map(request -> request.queryParam("name"))
+                .flatMap(nameOptional -> nameOptional.map(Mono::just).orElse(Mono.empty()))
+                .flatMapMany(projectService::findByNameQuery)
+                .collectList()
+                .flatMap(data -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(data))
+                .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    public Mono<ServerResponse> findByNameAndCostQuery(final ServerRequest serverRequest) {
+
+        final Mono<String> nameMono = Mono.just(serverRequest)
+                .map(request -> request.queryParam("name"))
+                .flatMap(name -> name.map(Mono::just).orElse(Mono.empty()));
+
+        final Mono<Long> costMono = Mono.just(serverRequest)
+                .map(request -> request.queryParam("cost"))
+                .flatMap(cost -> cost.map(Mono::just).orElse(Mono.empty()))
+                .map(Long::parseLong);
+
+        return nameMono.zipWith(costMono, projectService::findByNameAndCostQuery)
+                .flatMapMany(Function.identity())
+                .collectList()
+                .flatMap(data -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(data))
+                .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    public Mono<ServerResponse> findByEstimatedCostBetweenQuery(final ServerRequest serverRequest) {
+
+        final Mono<Long> fromMono = Mono.just(serverRequest)
+                .map(request -> request.queryParam("from"))
+                .flatMap(cost -> cost.map(Mono::just).orElse(Mono.empty()))
+                .map(Long::parseLong);
+
+
+        final Mono<Long> toMono = Mono.just(serverRequest)
+                .map(request -> request.queryParam("to"))
+                .flatMap(cost -> cost.map(Mono::just).orElse(Mono.empty()))
+                .map(Long::parseLong);
+
+        return fromMono.zipWith(toMono, projectService::findByEstimatedCostBetweenQuery)
+                .flatMapMany(Function.identity())
+                .collectList()
+                .flatMap(data -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(data))
+                .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    public Mono<ServerResponse> findByNameRegexQuery(final ServerRequest serverRequest) {
+        return Mono.just(serverRequest)
+                .map(request -> request.queryParam("name"))
+                .flatMap(nameOptional -> nameOptional.map(Mono::just).orElse(Mono.empty()))
+                .flatMapMany(projectService::findByNameRegexQuery)
+                .collectList()
+                .flatMap(data -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(data))
+                .switchIfEmpty(ServerResponse.notFound().build());
     }
 }
