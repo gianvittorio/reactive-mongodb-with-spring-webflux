@@ -100,6 +100,19 @@ public class ProjectRouter {
                         RequestPredicates.DELETE("/project/find/deleteWithCriteriaTemplate")
                                 .and(RequestPredicates.accept(MediaType.APPLICATION_JSON)),
                         handler::deleteWithCriteriaTemplate
+                ).andRoute(
+                        RequestPredicates.GET("/project/find/findCostsGroupByStartDateForProjectsCostGreaterThan")
+                                .and(RequestPredicates.accept(MediaType.APPLICATION_JSON)),
+                        handler::findCostsGroupByStartDateForProjectsCostGreaterThan
+                )
+                .andRoute(
+                        RequestPredicates.GET("/project/find/findNoOfProjectsCostGreaterThan")
+                                .and(RequestPredicates.accept(MediaType.APPLICATION_JSON)),
+                        handler::findNoOfProjectsCostGreaterThan
+                ).andRoute(
+                        RequestPredicates.GET("/project/find/findAllProjectTasks")
+                                .and(RequestPredicates.accept(MediaType.APPLICATION_JSON)),
+                        handler::findAllProjectTasks
                 );
     }
 }

@@ -258,4 +258,32 @@ public class ProjectHandler {
                 .flatMap(projectService::deleteWithCriteriaTemplate)
                 .then(ServerResponse.noContent().build());
     }
+
+    public Mono<ServerResponse> findNoOfProjectsCostGreaterThan(final ServerRequest serverRequest) {
+
+        return Mono.just(serverRequest.queryParam("cost"))
+                .flatMap(costOptional -> costOptional.map(Mono::just).orElse(Mono.empty()))
+                .map(Long::parseLong)
+                .flatMap(projectService::findNoOfProjectsCostGreaterThan)
+                .flatMap(body -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(body))
+                .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    public Mono<ServerResponse> findCostsGroupByStartDateForProjectsCostGreaterThan(final ServerRequest serverRequest) {
+
+        return Mono.just(serverRequest.queryParam("cost"))
+                .flatMap(costOptional -> costOptional.map(Mono::just).orElse(Mono.empty()))
+                .map(Long::parseLong)
+                .flatMapMany(projectService::findCostsGroupByStartDateForProjectsCostGreaterThan)
+                .collectList()
+                .flatMap(body -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(body))
+                .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    public Mono<ServerResponse> findAllProjectTasks(final ServerRequest serverRequest) {
+        return projectService.findAllProjectTasks()
+                .collectList()
+                .flatMap(body -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(body))
+                .switchIfEmpty(ServerResponse.notFound().build());
+    }
 }

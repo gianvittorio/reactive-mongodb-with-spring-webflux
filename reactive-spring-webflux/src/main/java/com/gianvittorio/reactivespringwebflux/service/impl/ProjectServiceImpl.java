@@ -5,9 +5,13 @@ import com.gianvittorio.reactivespringwebflux.domain.entity.Task;
 import com.gianvittorio.reactivespringwebflux.domain.repository.ProjectRepository;
 import com.gianvittorio.reactivespringwebflux.domain.repository.TaskRepository;
 import com.gianvittorio.reactivespringwebflux.service.ProjectService;
+import com.gianvittorio.reactivespringwebflux.service.ResultByStartDateAndCost;
+import com.gianvittorio.reactivespringwebflux.service.ResultCount;
+import com.gianvittorio.reactivespringwebflux.service.ResultProjectTasks;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -132,7 +136,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public Mono<Void> upsertCostWithCriteriaTemplate(String id, Long cost) {
+    public Mono<Void> upsertCostWithCriteriaTemplate(final String id, final Long cost) {
 
         return reactiveMongoTemplate.upsert(
                         Query.query(Criteria.where("id").is(id)),
@@ -143,7 +147,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public Mono<Void> deleteWithCriteriaTemplate(String id) {
+    public Mono<Void> deleteWithCriteriaTemplate(final String id) {
 
         return reactiveMongoTemplate.remove(
                         Query.query(Criteria.where("id")
@@ -151,5 +155,54 @@ public class ProjectServiceImpl implements ProjectService {
                         )
                 )
                 .then();
+    }
+
+    @Override
+    public Mono<Long> findNoOfProjectsCostGreaterThan(final Long cost) {
+
+        final MatchOperation matchStage = Aggregation.match(Criteria.where("cost").gt(cost));
+        final CountOperation countStage = Aggregation.count().as("costlyProjects");
+
+        final Aggregation aggregation = Aggregation.newAggregation(matchStage, countStage);
+        final Flux<ResultCount> output = reactiveMongoTemplate.aggregate(aggregation, "project", ResultCount.class);
+        final Flux<Long> resultc = output.map(result -> result.getCostlyProjects()).switchIfEmpty(Flux.just(0l));
+
+        return resultc.take(1).single();
+    }
+
+    @Override
+    public Flux<ResultByStartDateAndCost> findCostsGroupByStartDateForProjectsCostGreaterThan(final Long cost) {
+
+        final MatchOperation filterCost = Aggregation.match(Criteria.where("cost").gt(cost));
+        final GroupOperation groupByStartDateAndSumCost =
+                Aggregation.group("startDate")
+                        .sum("cost")
+                        .as("total");
+
+        final SortOperation sortByTotal = Aggregation.sort(Sort.Direction.DESC, "total");
+
+        final Aggregation aggregation = Aggregation.newAggregation(filterCost, groupByStartDateAndSumCost, sortByTotal);
+
+        return reactiveMongoTemplate.aggregate(aggregation, "project", ResultByStartDateAndCost.class);
+    }
+
+    @Override
+    public Flux<ResultProjectTasks> findAllProjectTasks() {
+
+        final LookupOperation lookupOperation = LookupOperation.newLookup()
+                .from("task")
+                .localField("_id")
+                .foreignField("pid")
+                .as("ProjectTasks");
+        final UnwindOperation unwindOperation = Aggregation.unwind("ProjectTasks");
+        final ProjectionOperation projectionOperation = Aggregation
+                .project()
+                .andExpression("_id").as("_id")
+                .andExpression("name").as("name")
+                .andExpression("ProjectTasks.name").as("taskName")
+                .andExpression("ProjectTasks.ownername").as("taskOwnerName");
+        final Aggregation aggregation = Aggregation.newAggregation(lookupOperation, unwindOperation, projectionOperation);
+
+        return reactiveMongoTemplate.aggregate(aggregation, "project", ResultProjectTasks.class);
     }
 }

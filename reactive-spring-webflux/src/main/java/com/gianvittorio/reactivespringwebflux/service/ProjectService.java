@@ -47,4 +47,10 @@ public interface ProjectService {
     Mono<Void> upsertCostWithCriteriaTemplate(final String id, final Long cost);
 
     Mono<Void> deleteWithCriteriaTemplate(final String id);
+
+    Mono<Long> findNoOfProjectsCostGreaterThan(final Long cost);
+
+    Flux<ResultByStartDateAndCost> findCostsGroupByStartDateForProjectsCostGreaterThan(final Long cost);
+
+    Flux<ResultProjectTasks> findAllProjectTasks();
 }
