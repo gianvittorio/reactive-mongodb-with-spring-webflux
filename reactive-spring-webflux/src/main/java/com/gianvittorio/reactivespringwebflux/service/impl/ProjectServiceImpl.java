@@ -124,7 +124,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public Flux<Project> findByNameQueryWithTemplate(final String name) {
+    public Flux<Project> findByNameRegexQueryWithTemplate(final String name) {
         return reactiveMongoTemplate.find(
                 Query.query(Criteria.where("name").regex(name)),
                 Project.class
@@ -138,6 +138,17 @@ public class ProjectServiceImpl implements ProjectService {
                         Query.query(Criteria.where("id").is(id)),
                         Update.update("cost", cost),
                         Project.class
+                )
+                .then();
+    }
+
+    @Override
+    public Mono<Void> deleteWithCriteriaTemplate(String id) {
+
+        return reactiveMongoTemplate.remove(
+                        Query.query(Criteria.where("id")
+                                .is(id)
+                        )
                 )
                 .then();
     }

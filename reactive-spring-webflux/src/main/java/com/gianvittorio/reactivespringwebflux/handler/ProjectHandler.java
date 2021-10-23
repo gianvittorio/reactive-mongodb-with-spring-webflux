@@ -10,6 +10,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 @Component
@@ -187,5 +188,74 @@ public class ProjectHandler {
                 .collectList()
                 .flatMap(data -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(data))
                 .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    public Mono<ServerResponse> findByProjectNameQueryWithTemplate(final ServerRequest serverRequest) {
+        return Mono.just(serverRequest)
+                .map(request -> request.queryParam("name"))
+                .flatMap(nameOptional -> nameOptional.map(Mono::just).orElse(Mono.empty()))
+                .flatMapMany(projectService::findByProjectNameQueryWithTemplate)
+                .collectList()
+                .flatMap(data -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(data))
+                .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    public Mono<ServerResponse> findByEstimatedCostBetweenQueryWithTemplate(final ServerRequest serverRequest) {
+
+        final Function<? super Mono<Optional<String>>, ? extends Mono<Long>> paramMapper =
+                (paramOptional) ->
+                        paramOptional
+                                .flatMap(
+                                        optional -> optional
+                                                .map(Mono::just)
+                                                .orElse(Mono.empty())
+                                )
+                                .map(Long::parseLong);
+
+        final Mono<Long> fromMono = Mono.just(serverRequest.queryParam("from"))
+                .transform(paramMapper);
+
+        final Mono<Long> toMono = Mono.just(serverRequest.queryParam("to"))
+                .transform(paramMapper);
+
+        return fromMono.zipWith(toMono, projectService::findByEstimatedCostBetweenQueryWithTemplate)
+                .flatMapMany(Function.identity())
+                .collectList()
+                .flatMap(data -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(data))
+                .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    public Mono<ServerResponse> findByNameRegexQueryWithTemplate(final ServerRequest serverRequest) {
+
+        return Mono.just(serverRequest)
+                .map(request -> request.queryParam("name"))
+                .flatMap(nameOptional -> nameOptional.map(Mono::just).orElse(Mono.empty()))
+                .flatMapMany(projectService::findByNameRegexQueryWithTemplate)
+                .collectList()
+                .flatMap(data -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(data))
+                .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    public Mono<ServerResponse> upsertCostWithCriteriaTemplate(final ServerRequest serverRequest) {
+        final Mono<String> idMono = Mono.just(serverRequest)
+                .map(request -> request.queryParam("id"))
+                .flatMap(cost -> cost.map(Mono::just).orElse(Mono.empty()));
+
+
+        final Mono<Long> costMono = Mono.just(serverRequest)
+                .map(request -> request.queryParam("cost"))
+                .flatMap(cost -> cost.map(Mono::just).orElse(Mono.empty()))
+                .map(Long::parseLong);
+
+        return idMono.zipWith(costMono, projectService::upsertCostWithCriteriaTemplate)
+                .flatMap(Function.identity())
+                .then(ServerResponse.ok().build());
+    }
+
+    public Mono<ServerResponse> deleteWithCriteriaTemplate(final ServerRequest serverRequest) {
+        return Mono.just(serverRequest.queryParam("id"))
+                .flatMap(idOptional -> idOptional.map(Mono::just).orElse(Mono.empty()))
+                .flatMap(projectService::deleteWithCriteriaTemplate)
+                .then(ServerResponse.noContent().build());
     }
 }

@@ -80,6 +80,26 @@ public class ProjectRouter {
                         RequestPredicates.GET("/project/find/byNameRegexQuery")
                                 .and(RequestPredicates.accept(MediaType.APPLICATION_JSON)),
                         handler::findByNameRegexQuery
+                ).andRoute(
+                        RequestPredicates.GET("/project/find/byProjectNameQueryWithTemplate")
+                                .and(RequestPredicates.accept(MediaType.APPLICATION_JSON)),
+                        handler::findByProjectNameQueryWithTemplate
+                ).andRoute(
+                        RequestPredicates.GET("/project/find/byEstimatedCostBetweenQueryWithTemplate")
+                                .and(RequestPredicates.accept(MediaType.APPLICATION_JSON)),
+                        handler::findByEstimatedCostBetweenQueryWithTemplate
+                ).andRoute(
+                        RequestPredicates.GET("/project/find/byNameRegexQueryWithTemplate")
+                                .and(RequestPredicates.accept(MediaType.APPLICATION_JSON)),
+                        handler::findByNameRegexQueryWithTemplate
+                ).andRoute(
+                        RequestPredicates.POST("/project/find/upsertCostWithCriteriaTemplate")
+                                .and(RequestPredicates.accept(MediaType.APPLICATION_JSON)),
+                        handler::upsertCostWithCriteriaTemplate
+                ).andRoute(
+                        RequestPredicates.DELETE("/project/find/deleteWithCriteriaTemplate")
+                                .and(RequestPredicates.accept(MediaType.APPLICATION_JSON)),
+                        handler::deleteWithCriteriaTemplate
                 );
     }
 }
