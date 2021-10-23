@@ -307,4 +307,32 @@ public class ProjectHandler {
         return projectService.saveProjectAndTask(projectMono, taskMono)
                 .then(ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).build());
     }
+
+    public Mono<ServerResponse> chunkAndSaveProject(final ServerRequest serverRequest) {
+        return Mono.just(
+                        Project.builder()
+                                .id("20")
+                                .name("ProjectGrid")
+                                .build()
+                )
+                .flatMap(projectService::chunkAndSaveProject)
+                .then(ServerResponse.ok().build());
+    }
+
+    public Mono<ServerResponse> loadProjectFromGrid(final ServerRequest serverRequest) {
+
+        return Mono.just(serverRequest.queryParam("pid"))
+                .flatMap(idOptional -> idOptional.map(Mono::just).orElse(Mono.empty()))
+                .flatMap(projectService::loadProjectFromGrid)
+                .flatMap(body -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(body))
+                .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    public Mono<ServerResponse> deleteProjectFromGrid(final ServerRequest serverRequest) {
+
+        return Mono.just(serverRequest.queryParam("pid"))
+                .flatMap(idOptional -> idOptional.map(Mono::just).orElse(Mono.empty()))
+                .flatMap(projectService::deleteProjectFromGrid)
+                .then(ServerResponse.noContent().build());
+    }
 }

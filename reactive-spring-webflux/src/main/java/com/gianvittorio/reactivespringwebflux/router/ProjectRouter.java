@@ -117,6 +117,18 @@ public class ProjectRouter {
                         RequestPredicates.POST("/project/find/saveProjectAndTask")
                                 .and(RequestPredicates.accept(MediaType.APPLICATION_JSON)),
                         handler::saveProjectAndTask
+                ).andRoute(
+                        RequestPredicates.POST("/project/find/chunkAndSaveProject")
+                                .and(RequestPredicates.accept(MediaType.APPLICATION_JSON)),
+                        handler::chunkAndSaveProject
+                ).andRoute(
+                        RequestPredicates.GET("/project/find/loadProjectFromGrid")
+                                .and(RequestPredicates.accept(MediaType.APPLICATION_JSON)),
+                        handler::loadProjectFromGrid
+                ).andRoute(
+                        RequestPredicates.DELETE("/project/find/deleteProjectFromGrid")
+                                .and(RequestPredicates.accept(MediaType.APPLICATION_JSON)),
+                        handler::deleteProjectFromGrid
                 );
     }
 }

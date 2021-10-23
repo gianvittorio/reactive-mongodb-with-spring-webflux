@@ -55,4 +55,10 @@ public interface ProjectService {
     Flux<ResultProjectTasks> findAllProjectTasks();
 
     Mono<Void> saveProjectAndTask(final Mono<Project> projectMono, final Mono<Task> taskMono);
+
+    Mono<Void> chunkAndSaveProject(final Project project);
+
+    Mono<Project> loadProjectFromGrid(final String projectId);
+
+    Mono<Void> deleteProjectFromGrid(final String projectId);
 }
