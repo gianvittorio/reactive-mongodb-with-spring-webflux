@@ -16,6 +16,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -204,5 +205,16 @@ public class ProjectServiceImpl implements ProjectService {
         final Aggregation aggregation = Aggregation.newAggregation(lookupOperation, unwindOperation, projectionOperation);
 
         return reactiveMongoTemplate.aggregate(aggregation, "project", ResultProjectTasks.class);
+    }
+
+    @Override
+    @Transactional
+    public Mono<Void> saveProjectAndTask(final Mono<Project> projectMono, final Mono<Task> taskMono) {
+
+        return projectMono
+                .flatMap(projectRepository::save)
+                .then(taskMono)
+                .flatMap(taskRepository::save)
+                .then();
     }
 }

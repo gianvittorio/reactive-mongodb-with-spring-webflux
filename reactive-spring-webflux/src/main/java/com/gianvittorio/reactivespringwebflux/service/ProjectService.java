@@ -53,4 +53,6 @@ public interface ProjectService {
     Flux<ResultByStartDateAndCost> findCostsGroupByStartDateForProjectsCostGreaterThan(final Long cost);
 
     Flux<ResultProjectTasks> findAllProjectTasks();
+
+    Mono<Void> saveProjectAndTask(final Mono<Project> projectMono, final Mono<Task> taskMono);
 }

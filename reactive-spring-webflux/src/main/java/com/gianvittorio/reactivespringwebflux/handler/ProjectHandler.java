@@ -286,4 +286,25 @@ public class ProjectHandler {
                 .flatMap(body -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(body))
                 .switchIfEmpty(ServerResponse.notFound().build());
     }
+
+    public Mono<ServerResponse> saveProjectAndTask(final ServerRequest serverRequest) {
+
+        final Mono<Project> projectMono = Mono.just(
+                Project.builder()
+                        .id("6")
+                        .name("Project6")
+                        .build()
+        );
+
+        final Mono<Task> taskMono = projectMono
+                .map(
+                        project -> Task.builder()
+                                .id("10")
+                                .projectId(project.getId())
+                                .build()
+                );
+
+        return projectService.saveProjectAndTask(projectMono, taskMono)
+                .then(ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).build());
+    }
 }
